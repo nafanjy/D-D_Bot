@@ -9,6 +9,6 @@ Current functionality:
 - Some conversational prompts (example: 'hey, bot')
 
 TODO functionality:
-- Play youtube audio in voice channel
+- Play audio in voice channel
   - Play by location/event
   - Pause/Play/Skip/Queue ability
