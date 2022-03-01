@@ -1,12 +1,17 @@
 import discord
+from discord.ext import commands
+from discord import FFmpegPCMAudio
+import requests
+import json
 import os
 import functions
 import vars
 from keep_alive import keep_alive
+import youtube_dl
 
 
 
-client = discord.Client()
+client = commands.Bot(command_prefix = '!')
 
 #log in
 @client.event
@@ -42,6 +47,43 @@ async def on_message(message):
     if any(word in message.content for word in vars.sad_words) and ('I ' or 'i ' in message.content):
         happy_str = functions.feeling_sad(author)
         await message.channel.send(happy_str)
+  #voice channel
+    #join
+    if message.content.startswith('!bj'):
+        channel = client.get_channel(message.author.voice.channel.id)
+        await channel.connect()
+    #leave
+    if message.content.startswith('!bl'):
+        for vc in client.voice_clients:
+            if vc.guild == message.guild:
+                await vc.disconnect()
+    #play
+    #this does not work in replit
+    #the download takes too long to be viable and dependencies are not avilable for dl
+    if message.content.startswith('!play'):
+        url_input = str(message.content).strip('!play').strip().rstrip()
+        channel = client.get_channel(message.author.voice.channel.id)
+        voice = await channel.connect()
+  
+        ydl_opts = {
+          'format': 'bestaudio/best',
+          'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+          }],
+        }
+  
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+          ydl.download([url_input])
+        for file in os.listdir("./"):
+          if file.endswith(".mp3"):
+            os.rename(file, "song.mp3")
+  
+        source = FFmpegPCMAudio('song.mp3')
+        player = voice.play(source)
+        
+      
 
 #run with secret token
 keep_alive()
